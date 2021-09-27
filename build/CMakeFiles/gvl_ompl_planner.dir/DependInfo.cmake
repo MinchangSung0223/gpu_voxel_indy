@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/root/workspace/gpu_voxel_indy2/src/gvl_ompl_planner.cpp" "/root/workspace/gpu_voxel_indy2/build/CMakeFiles/gvl_ompl_planner.dir/src/gvl_ompl_planner.cpp.o"
+  "/root/workspace/gpu_voxel_indy/src/gvl_ompl_planner.cpp" "/root/workspace/gpu_voxel_indy/build/CMakeFiles/gvl_ompl_planner.dir/src/gvl_ompl_planner.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -93,7 +93,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/root/workspace/gpu_voxel_indy2/build/CMakeFiles/gvl_ompl_planner_helper.dir/DependInfo.cmake"
+  "/root/workspace/gpu_voxel_indy/build/CMakeFiles/gvl_ompl_planner_helper.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

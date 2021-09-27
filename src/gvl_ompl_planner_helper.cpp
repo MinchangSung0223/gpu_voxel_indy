@@ -20,6 +20,7 @@
  *
  */
 //----------------------------------------------------------------------/*
+
 #include "gvl_ompl_planner_helper.h"
 #include <Eigen/Dense>
 #include <signal.h>
@@ -80,10 +81,14 @@ void printCatesianKDLFrame(KDL::Frame frame,char* str ){
 std::vector<std::array<double,JOINTNUM>>  GvlOmplPlannerHelper::doTaskPlanning(double goal_values[7],double start_values[JOINTNUM],ob::PathPtr path){
     PERF_MON_INITIALIZE(100, 1000);
     PERF_MON_ENABLE("planning");
-    auto space(std::make_shared<ob::RealVectorStateSpace>(JOINTNUM));
-    ob::RealVectorBounds bounds(JOINTNUM);
-    bounds.setLow(-10);
-    bounds.setHigh(10);
+    auto space(std::make_shared<ob::RealVectorStateSpace>(jointnum));
+    ob::RealVectorBounds bounds(jointnum);
+      for(int j = 0;j<jointnum;j++){
+          bounds.setLow(j,q_min(j));
+          bounds.setHigh(j,q_max(j));
+          
+      }
+
 
     std::vector<std::array<double,JOINTNUM>> q_list;
     q_list.clear();
@@ -574,8 +579,8 @@ GvlOmplPlannerHelper::GvlOmplPlannerHelper(const ob::SpaceInformationPtr &si)
 {
 
 
-    const char* urdf_name = "./mm_hyu_coarse/right_sim.urdf";
-    const char* colilsion_urdf_name = "./mm_hyu_coarse_collision/right_sim.urdf";    
+    const char* urdf_name = "./models/mm_hyu_coarse/right_sim.urdf";
+    const char* colilsion_urdf_name = "./models/mm_hyu_coarse_collision/right_sim.urdf";    
 
     si_ = si;
     stateSpace_ = si_->getStateSpace().get();
@@ -614,28 +619,6 @@ GvlOmplPlannerHelper::GvlOmplPlannerHelper(const ob::SpaceInformationPtr &si)
 
     LOGGING_INFO(Gpu_voxels, "\n\nKDL Chain load : "<<my_tree.getChain("world","SPA_Link_06",my_chain) <<"\n"<< endl);
 
-    q_min(0) = 0;
-    q_min(1) = 0;
-    q_min(2) = -3.141592;
-
-    q_min(3) = -2.63;
-    q_min(4) = -0.6981;
-    q_min(5) = -1.34;
-    q_min(6) = -0.156;
-    q_min(7) = -3.141592;
-    q_min(8) = -1.41;
-
-
-    q_max(0) = 7;
-    q_max(1) = 5;
-    q_max(2) = 3.141592;
-
-    q_max(3) = 1.57;
-    q_max(4) = 1.9;
-    q_max(5) = 1.09;
-    q_max(6) = 2.48;
-    q_max(7) = 3.141592;
-    q_max(8) = 1.392;
 
 
     PERF_MON_ENABLE("pose_check");

@@ -23,6 +23,8 @@
 #ifndef GVL_LINKAGE_TEST_LIB_H_INCLUDED
 #define GVL_LINKAGE_TEST_LIB_H_INCLUDED
 #define JOINTNUM 9
+
+
 #include <gpu_voxels/GpuVoxels.h>
 
 #include <ompl/base/SpaceInformation.h>
@@ -69,7 +71,7 @@ union Data
 
 };
 
- 
+ int jointnum=9;
 
 
 std::vector<std::array<double,JOINTNUM>> joint_trajectory;
@@ -96,8 +98,8 @@ Matrix4f tf;
 
 KDL::Tree my_tree;
 KDL::Chain my_chain;
-KDL::JntArray q_min(JOINTNUM);
-KDL::JntArray q_max(JOINTNUM);
+KDL::JntArray q_min;
+KDL::JntArray q_max;
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 using boost::dynamic_pointer_cast;

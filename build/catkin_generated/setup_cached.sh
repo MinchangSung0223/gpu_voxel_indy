@@ -7,7 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/root/workspace/gpu_voxel_indy2/build/devel:$CMAKE_PREFIX_PATH"
+export CMAKE_PREFIX_PATH="/root/workspace/gpu_voxel_indy/build/devel:$CMAKE_PREFIX_PATH"
 export LD_LIBRARY_PATH='/opt/ros/melodic/lib:/usr/local/cuda/lib64:/usr/local/cuda-10.0/lib64:/usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64'
-export ROSLISP_PACKAGE_DIRECTORIES='/root/workspace/gpu_voxel_indy2/build/devel/share/common-lisp'
-export ROS_PACKAGE_PATH="/root/workspace/gpu_voxel_indy2:$ROS_PACKAGE_PATH"
+export ROSLISP_PACKAGE_DIRECTORIES='/root/workspace/gpu_voxel_indy/build/devel/share/common-lisp'
+export ROS_PACKAGE_PATH="/root/workspace/gpu_voxel_indy:$ROS_PACKAGE_PATH"

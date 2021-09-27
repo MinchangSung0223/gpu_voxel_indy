@@ -44,7 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/root/workspace/gpu_voxel_indy2/build/gtest/googlemock/gtest/cmake_install.cmake")
+  include("/root/workspace/gpu_voxel_indy/build/gtest/googlemock/gtest/cmake_install.cmake")
 
 endif()
 

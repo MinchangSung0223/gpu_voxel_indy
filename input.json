@@ -1,0 +1,20 @@
+{
+    "robot": {
+        "urdf_location": "./models/mm_hyu_coarse/right_sim.urdf",
+        "lower_limit":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
+		"upper_limit":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],
+		"joint_names":["lin_x_joint","lin_y_joint","rot_z_joint","Arm_joint_1","Arm_joint_2","Arm_joint_3","Arm_joint_4","Arm_joint_5","Arm_joint_6"],
+		"JOINTNUM":9
+
+    },
+    "robot_collision": {
+        "urdf_location": "./models/mm_hyu_coarse/right_sim.urdf",
+        "lower_limit":[1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
+		"upeer_limit":[1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
+		"joint_names":["lin_x_joint","lin_y_joint","rot_z_joint","Arm_joint_1","Arm_joint_2","Arm_joint_3","Arm_joint_4","Arm_joint_5","Arm_joint_6"],
+		"JOINTNUM":9		
+    },
+    "camera":{
+    	"BaseToCamera":[[1.0,0.0,0.0,0.0],[1.0,0.0,0.0,0.0],[1.0,0.0,0.0,0.0],[1.0,0.0,0.0,0.0]]
+    }
+}

@@ -20,6 +20,7 @@
  *
  */
 //----------------------------------------------------------------------/*
+
 #include <iostream>
 using namespace std;
 #include <signal.h>
@@ -47,14 +48,60 @@ using namespace std;
 #define R2D 180.0/3.141592
 using namespace std;
 
+#include <iostream>
+#include <fstream> 
+#include <jsoncpp/json/json.h>
+
+#pragma comment(lib, "jsoncpp.lib")
 
 // initial quaternion 0.49996,0.86605,0.00010683,0
 
 std::shared_ptr<GvlOmplPlannerHelper> my_class_ptr;
+bool ReadFromFile(const char* filename, char* buffer, int len){
+  FILE* r = fopen(filename,"rb");
+  if (NULL == r)
+       return false;
+  size_t fileSize = fread(buffer, 1, len, r);
+  fclose(r);
+  return true;
 
+}
 int main(int argc, char **argv)
 { 
 
+  cout<<argv[1]<<endl;
+  const char* JSON_FILE= argv[1];
+  const int BufferLength = 102400;
+  char readBuffer[BufferLength] = {0,};
+  if (false == ReadFromFile(JSON_FILE, readBuffer, BufferLength)) 
+      return 0;
+  std::string config_doc = readBuffer;
+  Json::Value rootr;
+  Json::Reader reader;
+  bool parsingSuccessful = reader.parse(config_doc,rootr);
+  if ( !parsingSuccessful ) { 
+    std::cout << "Failed to parse configuration\n" << reader.getFormatedErrorMessages(); 
+    return 0; 
+  }
+  std::cout << rootr["robot"]["joint_names"]<<endl;
+  std::cout << rootr["camera"]["BaseToCamera"]<<endl;
+  
+
+  jointnum = rootr["robot"]["JOINTNUM"].asInt();
+
+  KDL::JntArray q_min_(jointnum);
+  KDL::JntArray q_max_(jointnum);
+  for(int j = 0;j<jointnum;j++){
+      q_min_(j) = rootr["robot"]["lower_limit"][j].asFloat();
+      q_max_(j) = rootr["robot"]["upper_limit"][j].asFloat();
+      cout<<"qmin : "<<q_min_.data(j)<<endl;
+      cout<<"qmax : "<<rootr["robot"]["upper_limit"][j]<<endl;
+         
+  }
+  q_min = q_min_;
+  q_max = q_max_;
+
+  usleep(100);
 
   signal(SIGINT, ctrlchandler);
   signal(SIGTERM, killhandler);
@@ -65,33 +112,15 @@ int main(int argc, char **argv)
   PERF_MON_ENABLE("planning");
 
   // construct the state space we are planning in
-  auto space(std::make_shared<ob::RealVectorStateSpace>(JOINTNUM));
+  auto space(std::make_shared<ob::RealVectorStateSpace>(jointnum));
   //We then set the bounds for the R3 component of this state space:
-  ob::RealVectorBounds bounds(JOINTNUM);
-    bounds.setLow(0,-7);
-    bounds.setHigh(0,7);
-    bounds.setLow(1,-5);
-    bounds.setHigh(1,5);
-    bounds.setLow(2,-PI);
-    bounds.setHigh(2,PI);
-
-
-
-    bounds.setLow(3,-2.63);
-    bounds.setHigh(3,1.57);
-    bounds.setLow(4,-0.6981);
-    bounds.setHigh(4,1.9);
-    bounds.setLow(5,-1.34);
-    bounds.setHigh(5,1.09);
-    bounds.setLow(6,-0.156);
-    bounds.setHigh(6,2.48);
-    bounds.setLow(7,-PI);
-    bounds.setHigh(7,PI);
-    bounds.setLow(8,-1.41);
-    bounds.setHigh(8,392);
-
-
+  ob::RealVectorBounds bounds(jointnum);
+  for(int j = 0;j<jointnum;j++){
+      bounds.setLow(j,q_min(j));
+      bounds.setHigh(j,q_max(j));
+  }
   space->setBounds(bounds);
+
   //Create an instance of ompl::base::SpaceInformation for the state space
   auto si(std::make_shared<ob::SpaceInformation>(space));
   //Set the state validity checker
@@ -113,10 +142,6 @@ int main(int argc, char **argv)
 
 
   while(1){
-       // double task_goal_values[7] ={0,0,0,1,3.0,2.5,1.325};
-      //  double start_values[JOINTNUM]={3.0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};      
-      //  my_class_ptr->doTaskPlanning(task_goal_values,start_values);
-      //  std::cout<<"===========Task Planning End=========="<<std::endl;
         usleep(3000000);
   }
 //----------------------------------------------------//

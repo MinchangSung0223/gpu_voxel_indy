@@ -62,10 +62,10 @@ RM = /usr/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/workspace/gpu_voxel_indy2
+CMAKE_SOURCE_DIR = /root/workspace/gpu_voxel_indy
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/workspace/gpu_voxel_indy2/build
+CMAKE_BINARY_DIR = /root/workspace/gpu_voxel_indy/build
 
 # Utility rule file for pcl_msgs_generate_messages_cpp.
 
@@ -86,6 +86,6 @@ CMakeFiles/pcl_msgs_generate_messages_cpp.dir/clean:
 .PHONY : CMakeFiles/pcl_msgs_generate_messages_cpp.dir/clean
 
 CMakeFiles/pcl_msgs_generate_messages_cpp.dir/depend:
-	cd /root/workspace/gpu_voxel_indy2/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/workspace/gpu_voxel_indy2 /root/workspace/gpu_voxel_indy2 /root/workspace/gpu_voxel_indy2/build /root/workspace/gpu_voxel_indy2/build /root/workspace/gpu_voxel_indy2/build/CMakeFiles/pcl_msgs_generate_messages_cpp.dir/DependInfo.cmake --color=$(COLOR)
+	cd /root/workspace/gpu_voxel_indy/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/workspace/gpu_voxel_indy /root/workspace/gpu_voxel_indy /root/workspace/gpu_voxel_indy/build /root/workspace/gpu_voxel_indy/build /root/workspace/gpu_voxel_indy/build/CMakeFiles/pcl_msgs_generate_messages_cpp.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/pcl_msgs_generate_messages_cpp.dir/depend
 
