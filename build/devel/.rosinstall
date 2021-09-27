@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /root/workspace/gpu_voxel_indy2/build/devel/setup.sh
