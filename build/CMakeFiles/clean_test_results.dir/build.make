@@ -73,7 +73,7 @@ CMAKE_BINARY_DIR = /root/workspace/gpu_voxel_indy/build
 include CMakeFiles/clean_test_results.dir/progress.make
 
 CMakeFiles/clean_test_results:
-	/opt/conda/envs/ros/bin/python2 /opt/ros/melodic/share/catkin/cmake/test/remove_test_results.py /root/workspace/gpu_voxel_indy/build/test_results
+	/opt/conda/envs/ros/bin/python2 /opt/ros/kinetic/share/catkin/cmake/test/remove_test_results.py /root/workspace/gpu_voxel_indy/build/test_results
 
 clean_test_results: CMakeFiles/clean_test_results
 clean_test_results: CMakeFiles/clean_test_results.dir/build.make

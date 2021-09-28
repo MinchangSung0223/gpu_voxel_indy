@@ -82,7 +82,7 @@ robot::JointValueMap myRobotJointValues_mm;
 
 gpu_voxels::GpuVoxelsSharedPtr gvl;
 PointCloud my_point_cloud;
-Matrix4f tf;
+Matrix4f tf=Matrix4f::createIdentity();
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolver.hpp>
@@ -109,7 +109,7 @@ using gpu_voxels::voxelmap::DistanceVoxelMap;
 using gpu_voxels::voxellist::CountingVoxelList;
 using gpu_voxels::voxellist::BitVectorVoxelList;
 
-float voxel_side_length = 0.05f; // 1 cm voxel size
+float voxel_side_length = 0.01f; // 1 cm voxel size
 bool new_data_received;
 bool new_pose_received;
 bool isMoving = false;
@@ -117,6 +117,19 @@ boost::shared_ptr<ProbVoxelMap> myEnvironmentMap;
 boost::shared_ptr<CountingVoxelList> countingVoxelList;
 
 boost::shared_ptr<BitVectorVoxelList> myRobotCollisionMapBitVoxel;
+Eigen::Matrix4f TBaseToCamera=Eigen::Matrix4f::Identity();
+
+
+std::string urdf_name="";
+std::string  colilsion_urdf_name="";
+std::string  point_topic_name="";
+
+float base_x=0.0;
+float base_y=0.0;
+float base_z=0.0;
+
+
+
 void ctrlchandler(int)
 {
   exit(EXIT_SUCCESS);
@@ -144,7 +157,7 @@ public:
     void tcpIter();
     void rosPublishJointTrajectory(std::vector<std::array<double,7>>& q_list);
     void rosPublishJointStates(double *values);
-    Eigen::Matrix4f loadBaseToCam(std::string filename);
+    Eigen::Matrix4f loadBaseToCam(Eigen::Matrix4f TBaseToCamera);
     std::shared_ptr<GvlOmplPlannerHelper> getptr() {
         return shared_from_this();
     }

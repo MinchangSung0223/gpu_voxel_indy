@@ -85,9 +85,21 @@ int main(int argc, char **argv)
   }
   std::cout << rootr["robot"]["joint_names"]<<endl;
   std::cout << rootr["camera"]["BaseToCamera"]<<endl;
-  
+  for(int i= 0;i<4;i++)
+    for(int j=0;j<4;j++)
+      TBaseToCamera(i,j) = rootr["camera"]["BaseToCamera"][i][j].asFloat();
+  std::cout<<TBaseToCamera<<std::endl;
+  std::cout<<tf<<std::endl;
+
+  urdf_name = rootr["robot"]["urdf_location"].asString();
+  colilsion_urdf_name = rootr["robot_collision"]["urdf_location"].asString();
+  point_topic_name = rootr["camera"]["topic_name"].asString();
 
   jointnum = rootr["robot"]["JOINTNUM"].asInt();
+  base_x=rootr["robot"]["base_position"][0].asFloat();
+  base_y=rootr["robot"]["base_position"][1].asFloat();
+  base_z=rootr["robot"]["base_position"][2].asFloat();
+
 
   KDL::JntArray q_min_(jointnum);
   KDL::JntArray q_max_(jointnum);
@@ -133,8 +145,6 @@ int main(int argc, char **argv)
 
 
   my_class_ptr->doVis();
-  std::cout << "Press Enter Key if ready!" << std::endl;
-  std::cin.ignore();
 
 
   thread t1{&GvlOmplPlannerHelper::rosIter ,my_class_ptr};  

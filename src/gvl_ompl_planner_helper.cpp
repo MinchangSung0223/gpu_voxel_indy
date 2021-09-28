@@ -65,7 +65,7 @@ namespace bfs = boost::filesystem;
 
 double joint_states[JOINTNUM] = {0,0,0,0,0,0,0,0,0};
 double task_goal_values[7] = {0,0,0,1,3.0,2.0,1.35}; 
-Vector3ui map_dimensions(700,500,400);
+Vector3ui map_dimensions(300,300,400);
 std::array<double,JOINTNUM> send_q = {0};
 bool cmdMove=false;
 void printCatesianKDLFrame(KDL::Frame frame,char* str ){
@@ -241,14 +241,6 @@ void rosjointStateCallback(const sensor_msgs::JointState::ConstPtr& msg){
     {
         myRobotJointValues[msg->name[i]] = msg->position[i];
         joint_states[i] = msg->position[i];
-        if(i ==0){
-                myRobotJointValues[msg->name[i]] = msg->position[i]+1.7;
-                joint_states[i] = msg->position[i]+1.7;
-        }
-        if(i ==1){
-                myRobotJointValues[msg->name[i]] = msg->position[i]+3.5;
-                joint_states[i] = msg->position[i]+3.5;
-        }
         
     }
     gvl->setRobotConfiguration("myUrdfRobot",myRobotJointValues);
@@ -305,34 +297,16 @@ void roscallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& msg){
     }
     my_point_cloud.update(point_data);
     my_point_cloud.transformSelf(&tf);
+    Matrix4f base_tf=Matrix4f(1,0,0,base_x,0,1,0,base_y,0,0,1,base_z,0,0,0,1);
+    my_point_cloud.transformSelf(&base_tf);
+
+
+
     new_data_received=true;
 }
 
-Eigen::Matrix4f GvlOmplPlannerHelper::loadBaseToCam(std::string filename){
+Eigen::Matrix4f GvlOmplPlannerHelper::loadBaseToCam(Eigen::Matrix4f TBaseToCamera){
 
-    // Image Coordinate -> Cam Coordinate -> World Coordinate
-    std::string testline;
-    std::string word[4][4];
-    Eigen::Matrix4f TBaseToCamera = Eigen::Matrix4f::Identity();
-    std::ifstream Test (filename);
-
-    if (!Test)
-    {
-        std::cout << "There was an error opening the file.\n"<<std::endl;
-        return TBaseToCamera;
-    }
-    int x=0,y=0;
-    while( Test>>testline ){
-        word[y][x]=testline;
-        x++;
-        if (testline=="")
-        y++;
-    }
-        for (int y=0;y<4;y++)
-        {
-            for (int x=0;x<4;x++)
-                 TBaseToCamera(y,x)= std::stod(word[y][x]);
-        }
     Eigen::Matrix3f Rx  = Eigen::Matrix3f::Identity();
     Eigen::Matrix3f Ry  = Eigen::Matrix3f::Identity();
     Eigen::Matrix3f Rz  = Eigen::Matrix3f::Identity();
@@ -419,48 +393,37 @@ void GvlOmplPlannerHelper::tcpIter(){
 }
 
 void GvlOmplPlannerHelper::rosIter(){
-          std::cout<<"ddd"<<std::endl;
-
     int argc;
     char **argv;
-          std::cout<<"ddd"<<std::endl;
-
     ros::init(argc,argv,"gpu_voxel");
-
-      std::cout<<"ddd"<<std::endl;
 
     const Vector3f camera_offsets(0.0f,
                                  0.0f, 
                                  0.0f); 
-      std::cout<<"ddd"<<std::endl;
 
-    Eigen::Matrix4f TBaseToCamera = GvlOmplPlannerHelper::loadBaseToCam("TBaseToCamera.txt");
-      std::cout<<"ddd"<<std::endl;
 
+        
+    TBaseToCamera = GvlOmplPlannerHelper::loadBaseToCam(TBaseToCamera);
     tf = Matrix4f(TBaseToCamera(0,0),TBaseToCamera(0,1),TBaseToCamera(0,2),TBaseToCamera(0,3)
         ,TBaseToCamera(1,0),TBaseToCamera(1,1),TBaseToCamera(1,2),TBaseToCamera(1,3)
         ,TBaseToCamera(2,0),TBaseToCamera(2,1),TBaseToCamera(2,2),TBaseToCamera(2,3)
         ,TBaseToCamera(3,0),TBaseToCamera(3,1),TBaseToCamera(3,2),TBaseToCamera(3,3));
-        
-    //tf = Matrix4f(1,0,0,2.0, 0,1,0,2.0, 0,0,1,1.0, 0,0,0,1);
-    std::cout<<"==========TBaseToCmaera.txt==========\n"<<std::endl;
-    std::cout<<tf<<std::endl;
-
-
-    countingVoxelList = dynamic_pointer_cast<CountingVoxelList>(gvl->getMap("countingVoxelList"));
-    myRobotCollisionMapBitVoxel = dynamic_pointer_cast<BitVectorVoxelList>(gvl->getMap("myRobotCollisionMapBitVoxel"));
-    
+    std::cout<<"==========TBaseToCmaera==========\n"<<std::endl;
+    tf.print();
+  std::cout << "Press Enter Key if ready!" << std::endl;
+  std::cin.ignore();
     ros::NodeHandle nh;
     ros::NodeHandle nh2;
 
     ros::Subscriber joint_sub = nh.subscribe("/joint_smc", 1, rosjointStateCallback); 
     ros::Subscriber desiredPose_sub = nh.subscribe("/desired_pose", 1, rosDesiredPoseCallback); 
     ros::Subscriber moving_flag = nh.subscribe("/ismoving", 1, rosMovingFlagCallback); 
-    
+
     
     //ros::Subscriber point_sub = nh.subscribe<pcl::PointCloud<pcl::PointXYZ> >("/camera/depth/color/points", 1,roscallback);
-
-    ros::Subscriber point_sub = nh.subscribe<pcl::PointCloud<pcl::PointXYZ> >("/merged", 1,roscallback);
+    std::cout<<point_topic_name<<std::endl;
+    const char* point_topic_name_ =point_topic_name.c_str();
+    ros::Subscriber point_sub = nh.subscribe<pcl::PointCloud<pcl::PointXYZ> >(point_topic_name_, 1,roscallback);
 
     //ros::Subscriber point_sub = nh.subscribe<pcl::PointCloud<pcl::PointXYZ> >("/cam_0_zf", 1,roscallback);
     //ros::Publisher pub_joint =  nh.advertise<sensor_msgs::JointState>("/joint_states_desired", 1000);
@@ -470,9 +433,9 @@ void GvlOmplPlannerHelper::rosIter(){
     ros::Rate r(100);
     new_data_received = true; // call visualize on the first iteration
     new_pose_received=false;
-      std::cout<<"ddd"<<std::endl;
     size_t num_colls = 0;
-  
+    countingVoxelList = dynamic_pointer_cast<CountingVoxelList>(gvl->getMap("countingVoxelList"));
+    myRobotCollisionMapBitVoxel = dynamic_pointer_cast<BitVectorVoxelList>(gvl->getMap("myRobotCollisionMapBitVoxel"));
 
     while (ros::ok())
     {
@@ -532,14 +495,7 @@ void GvlOmplPlannerHelper::rosIter(){
                     std::array<double,JOINTNUM> temp_q = joint_trajectory.at(j);
                     
                     for(int k=0;k<JOINTNUM;k++){
-                        if(k==0)
-                                points.positions.push_back(temp_q.at(k)-1.7);
-                        else if(k==1)
-                                points.positions.push_back(temp_q.at(k)-3.5);
-                        else if(k>1)
-                                points.positions.push_back(temp_q.at(k));
-
-
+                        points.positions.push_back(temp_q.at(k));
                         points.velocities.push_back(0.0);
                     }
                     
@@ -578,9 +534,6 @@ GvlOmplPlannerHelper::GvlOmplPlannerHelper(const ob::SpaceInformationPtr &si)
     , ob::MotionValidator(si)
 {
 
-
-    const char* urdf_name = "./models/mm_hyu_coarse/right_sim.urdf";
-    const char* colilsion_urdf_name = "./models/mm_hyu_coarse_collision/right_sim.urdf";    
 
     si_ = si;
     stateSpace_ = si_->getStateSpace().get();

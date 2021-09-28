@@ -1,20 +1,28 @@
 {
     "robot": {
-        "urdf_location": "./models/mm_hyu_coarse/right_sim.urdf",
+        "urdf_location": "./models/indy7_coarse/indy7.urdf",
         "lower_limit":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
 		"upper_limit":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],
-		"joint_names":["lin_x_joint","lin_y_joint","rot_z_joint","Arm_joint_1","Arm_joint_2","Arm_joint_3","Arm_joint_4","Arm_joint_5","Arm_joint_6"],
-		"JOINTNUM":9
+		"joint_names":["joint0","joint1","joint2","joint3","joint4","joint5"],
+        "base_position":[1,1,0],
+        "base_orientation":[0,0,0],
+		"JOINTNUM":6
 
     },
     "robot_collision": {
-        "urdf_location": "./models/mm_hyu_coarse/right_sim.urdf",
+        "urdf_location": "./models/indy7_collision_coarse/indy7.urdf",
         "lower_limit":[1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
 		"upeer_limit":[1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
-		"joint_names":["lin_x_joint","lin_y_joint","rot_z_joint","Arm_joint_1","Arm_joint_2","Arm_joint_3","Arm_joint_4","Arm_joint_5","Arm_joint_6"],
-		"JOINTNUM":9		
+		"joint_names":["joint0","joint1","joint2","joint3","joint4","joint5"],
+        "base_position":[1,1,0],
+        "base_orientation":[0,0,0],
+        "JOINTNUM":6
     },
     "camera":{
-    	"BaseToCamera":[[1.0,0.0,0.0,0.0],[1.0,0.0,0.0,0.0],[1.0,0.0,0.0,0.0],[1.0,0.0,0.0,0.0]]
+        "topic_name":"/camera/depth/color/points",
+    	"BaseToCamera":[[-0.65328 ,-0.38268 ,-0.65328, 1.50000],
+ [0.27060 ,-0.92388 ,0.27060, -0.50000],
+ [-0.70711 ,0.00000, 0.70711 ,1.20000],
+ [0.00000 ,0.00000, 0.00000 ,1.00000]]
     }
 }
