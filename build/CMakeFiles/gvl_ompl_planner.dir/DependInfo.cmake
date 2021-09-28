@@ -82,6 +82,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/usr/include/python2.7"
   "/usr/include/tcl"
   "/usr/include/libxml2"
+  ".././indydcp"
   "/usr/local/include/vtk-8.2"
   "/usr/local/include/eigen3"
   "/usr/include/ni"

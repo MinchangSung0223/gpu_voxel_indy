@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/indyTest.dir/src/indyTest.cpp.o -o indyTest   -L/root/workspace/gpu-voxels/build/lib  -Wl,-rpath,/root/workspace/gpu-voxels/build/lib:/root/workspace/gpu_voxel_indy/build libindydcp.so 

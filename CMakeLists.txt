@@ -60,7 +60,8 @@ add_definitions(
   ${gpu_voxels_DEFINITIONS}
 )
 
-
+add_library (indydcp indydcp/IndyDCPConnector.cpp indydcp/IndyDCPException.cpp  indydcp/IndyDCPConnectorCommands.cpp indydcp/IndyDCP.cpp 
+)
 # Create a library that uses GPU Voxels:
 add_library (gvl_ompl_planner_helper src/gvl_ompl_planner_helper.cpp 
 )
@@ -118,6 +119,7 @@ target_include_directories (gvl_ompl_planner_helper
     PUBLIC ${moveit_INCLUDE_DIRS} # this should be removed in upcoming versions.
     PUBLIC  ${catkin_INCLUDE_DIRS}
     PUBLIC ${Eigen_INCLUDE_DIRS}
+    PUBLIC "./indydcp"
    # PUBLIC ${Poco_INCLUDE}
 
 )
@@ -148,4 +150,7 @@ target_link_libraries (gvl_ompl_planner
 target_include_directories(gvl_ompl_planner
      PUBLIC ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
 )
+add_executable(indyTest src/indyTest.cpp)
+target_link_libraries(indyTest 
+        LINK_PUBLIC indydcp)
 

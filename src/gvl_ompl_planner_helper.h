@@ -22,7 +22,7 @@
 //----------------------------------------------------------------------/*
 #ifndef GVL_LINKAGE_TEST_LIB_H_INCLUDED
 #define GVL_LINKAGE_TEST_LIB_H_INCLUDED
-#define JOINTNUM 9
+#define JOINTNUM 6
 
 
 #include <gpu_voxels/GpuVoxels.h>
@@ -71,14 +71,16 @@ union Data
 
 };
 
- int jointnum=9;
+ int jointnum=6;
 
 
-std::vector<std::array<double,JOINTNUM>> joint_trajectory;
+std::vector<KDL::JntArray> joint_trajectory;
 
 
 robot::JointValueMap myRobotJointValues;
 robot::JointValueMap myRobotJointValues_mm;
+KDL::JntArray joint_states;
+
 
 gpu_voxels::GpuVoxelsSharedPtr gvl;
 PointCloud my_point_cloud;
@@ -123,6 +125,7 @@ Eigen::Matrix4f TBaseToCamera=Eigen::Matrix4f::Identity();
 std::string urdf_name="";
 std::string  colilsion_urdf_name="";
 std::string  point_topic_name="";
+std::vector<std::string> joint_names;
 
 float base_x=0.0;
 float base_y=0.0;
@@ -154,18 +157,18 @@ public:
 
     void plan();
     void rosIter();
-    void tcpIter();
+    void dcpIter();
     void rosPublishJointTrajectory(std::vector<std::array<double,7>>& q_list);
     void rosPublishJointStates(double *values);
     Eigen::Matrix4f loadBaseToCam(Eigen::Matrix4f TBaseToCamera);
     std::shared_ptr<GvlOmplPlannerHelper> getptr() {
         return shared_from_this();
     }
-    std::vector<std::array<double,JOINTNUM>>  doTaskPlanning(double goal_values[7],double start_values[JOINTNUM], ob::PathPtr path);
+    std::vector<KDL::JntArray>  doTaskPlanning(double goal_values[7],KDL::JntArray start_values, ob::PathPtr path);
 
     void insertStartAndGoal(const ompl::base::ScopedState<> &start, const ompl::base::ScopedState<> &goal) const;
     void visualizeSolution(ompl::base::PathPtr path);
-    void visualizeSolution( std::vector<std::array<double,JOINTNUM>> solution);
+    void visualizeSolution( std::vector<KDL::JntArray> solution);
     void doVis();
     void doVis2();
     void setTransformation(Eigen::Matrix<float, 4, 4> T);
