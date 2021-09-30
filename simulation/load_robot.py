@@ -127,17 +127,13 @@ def publishPointCloud(d435Id,d435Id2):
 
 		pub.publish(pc2)
 		js = JointState()
-		js.name.append("lin_x_joint")
-		js.name.append("lin_y_joint")
-		js.name.append("rot_z_joint")		
-		js.name.append("Arm_Joint_1")
-		js.name.append("Arm_Joint_2")
-		js.name.append("Arm_Joint_3")
-		js.name.append("Arm_Joint_4")
-		js.name.append("Arm_Joint_5")
-		js.name.append("Arm_Joint_6")
-
-		for i in range(0,8):
+		js.name.append("joint0")
+		js.name.append("joint1")
+		js.name.append("joint2")
+		js.name.append("joint3")
+		js.name.append("joint4")
+		js.name.append("joint5")
+		for i in range(0,5):
 			js.position.append(targetPosition[i])
 		pub_joint.publish(js)
 def getHomogeneousMatrix(Id):
@@ -175,17 +171,12 @@ def main():
 	p.setGravity(0, 0, -9.8)
 	tableId=p.loadURDF("./urdf/shelfandtable/shelfandtable.urdf", [0, 0, 0.0])
 
-	robotId = p.loadURDF(robotPATH,[1.0,0,0.0], p.getQuaternionFromEuler([0,0,0]))
-	indy7robotId = p.loadURDF(indy7robotPATH,[0.0,0,0.0], p.getQuaternionFromEuler([0,0,0]))
+
+	#indy7robotId = p.loadURDF(indy7robotPATH,[0.0,0,0.0], p.getQuaternionFromEuler([0,0,0]))
 	obstacleId = p.loadURDF(obstaclePATH,[0,0,0],p.getQuaternionFromEuler([0,0,0]))
 	d435Id = p.loadURDF("./urdf/d435/d435.urdf", [0, 0, 0.0])
 	p.resetBasePositionAndOrientation(d435Id, [1.5 ,-0.5, 1.2],p.getQuaternionFromEuler([0,pi/4,pi-pi/8]))
 
-
-	NumberofJoint = p.getNumJoints(robotId)
-	for i in range(p.getNumJoints(robotId)):
-		print(p.getJointInfo(robotId, i))
-		p.setJointMotorControl2(robotId, i, p.VELOCITY_CONTROL, targetVelocity=0, force=0)
 
 	MobileJoint = [0,1,2]
 	ArmJoint = [12,13,14,15,16,17]
@@ -200,7 +191,7 @@ def main():
 
 
 	pub = rospy.Publisher("/camera/depth/color/points", PointCloud2, queue_size=2)
-	pub_joint = rospy.Publisher("/joint_states", JointState, queue_size=2)
+	pub_joint = rospy.Publisher("/joint_smc2", JointState, queue_size=2)
 	
 	t = threading.Thread(target=publishPointCloud, args=(d435Id,d435Id))
 	t.start()
@@ -209,20 +200,34 @@ def main():
 	x_Id = p.addUserDebugParameter("x", 0, 7, 0.663)
 	y_Id = p.addUserDebugParameter("y", 0, 5, 0.0)
 	z_Id = p.addUserDebugParameter("z", 0, 3, 0.263)
+
+	j0_Id = p.addUserDebugParameter("j0", -3.05432619099, 3.05432619099, 0.0)
+	j1_Id = p.addUserDebugParameter("j1", -3.05432619099, 3.05432619099, -15.0*3.141592/180)
+	j2_Id = p.addUserDebugParameter("j2", -3.05432619099, 3.05432619099, -90.0*3.141592/180)
+	j3_Id = p.addUserDebugParameter("j3", -3.05432619099, 3.05432619099, 0)
+	j4_Id = p.addUserDebugParameter("j4", -3.05432619099, 3.05432619099, -75.0*3.141592/180)
+	j5_Id = p.addUserDebugParameter("j5", -3.14, 3.14, 0.263)
+
+
+
 	while(1):
-		x = targetPosition[0];
-		y = targetPosition[1];
-		wz = targetPosition[2];
+
 		obastaclePose[0] = p.readUserDebugParameter(x_Id)
 		obastaclePose[1] = p.readUserDebugParameter(y_Id)
 		obastaclePose[2] = p.readUserDebugParameter(z_Id)	
-		p.resetBasePositionAndOrientation(robotId, [x, y, 0], p.getQuaternionFromEuler([0,0,wz]))	
+		targetPosition[0] = p.readUserDebugParameter(j0_Id)
+		targetPosition[1] = p.readUserDebugParameter(j1_Id)
+		targetPosition[2] = p.readUserDebugParameter(j2_Id)
+		targetPosition[3] = p.readUserDebugParameter(j3_Id)
+		targetPosition[4] = p.readUserDebugParameter(j4_Id)
+		targetPosition[5] = p.readUserDebugParameter(j5_Id)
+
 		p.resetBasePositionAndOrientation(obstacleId, [obastaclePose[0],obastaclePose[1],obastaclePose[2]], 
 		[obastaclePose[3],obastaclePose[4],obastaclePose[5],obastaclePose[6]])	
 		
 		armNum=0;
-		for j in ArmJoint:
-			p.resetJointState(robotId, j, targetPosition[armNum+3])
+		for j in range(1,6):
+			#p.resetJointState(indy7robotId, j, targetPosition[armNum])
 			#print(armNum,targetPosition[armNum+3])
 			armNum = armNum+1
 		joint_states = targetPosition

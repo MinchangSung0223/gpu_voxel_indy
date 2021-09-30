@@ -187,6 +187,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named kdlTest
+
+# Build rule for target.
+kdlTest: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 kdlTest
+.PHONY : kdlTest
+
+# fast build rule for target.
+kdlTest/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kdlTest.dir/build.make CMakeFiles/kdlTest.dir/build
+.PHONY : kdlTest/fast
+
+#=============================================================================
 # Target rules for targets named indyTest
 
 # Build rule for target.
@@ -2052,6 +2065,33 @@ src/indyTest.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/indyTest.dir/build.make CMakeFiles/indyTest.dir/src/indyTest.cpp.s
 .PHONY : src/indyTest.cpp.s
 
+src/kdlTest.o: src/kdlTest.cpp.o
+
+.PHONY : src/kdlTest.o
+
+# target to build an object file
+src/kdlTest.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kdlTest.dir/build.make CMakeFiles/kdlTest.dir/src/kdlTest.cpp.o
+.PHONY : src/kdlTest.cpp.o
+
+src/kdlTest.i: src/kdlTest.cpp.i
+
+.PHONY : src/kdlTest.i
+
+# target to preprocess a source file
+src/kdlTest.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kdlTest.dir/build.make CMakeFiles/kdlTest.dir/src/kdlTest.cpp.i
+.PHONY : src/kdlTest.cpp.i
+
+src/kdlTest.s: src/kdlTest.cpp.s
+
+.PHONY : src/kdlTest.s
+
+# target to generate assembly for a file
+src/kdlTest.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kdlTest.dir/build.make CMakeFiles/kdlTest.dir/src/kdlTest.cpp.s
+.PHONY : src/kdlTest.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -2194,6 +2234,7 @@ help:
 	@echo "... gvl_ompl_planner_helper"
 	@echo "... indyTest"
 	@echo "... indydcp"
+	@echo "... kdlTest"
 	@echo "... indydcp/IndyDCP.o"
 	@echo "... indydcp/IndyDCP.i"
 	@echo "... indydcp/IndyDCP.s"
@@ -2215,6 +2256,9 @@ help:
 	@echo "... src/indyTest.o"
 	@echo "... src/indyTest.i"
 	@echo "... src/indyTest.s"
+	@echo "... src/kdlTest.o"
+	@echo "... src/kdlTest.i"
+	@echo "... src/kdlTest.s"
 .PHONY : help
 
 

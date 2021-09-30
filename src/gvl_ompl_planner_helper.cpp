@@ -62,10 +62,11 @@ namespace bfs = boost::filesystem;
 #define PURPLE BitVoxelMeaning(eBVM_SWEPT_VOLUME_START + (150 % 249) )
 #define BLUE BitVoxelMeaning(eBVM_SWEPT_VOLUME_START + (200 % 249))
 #define YELLOW BitVoxelMeaning(eBVM_SWEPT_VOLUME_START + (1 % 249))
+using namespace NRMKIndy::Service::DCP;
+IndyDCPConnector connector("192.168.0.7", ROBOT_INDY7);
 
 double task_goal_values[7] = {0,0,0,1,3.0,2.0,1.35}; 
-Vector3ui map_dimensions(300,300,400);
-std::array<double,JOINTNUM> send_q = {0};
+Vector3ui map_dimensions(250,250,300);
 bool cmdMove=false;
 void printCatesianKDLFrame(KDL::Frame frame,char* str ){
     std::cout<<"======="<<str<<"=======\n\n"<<endl;
@@ -85,7 +86,6 @@ std::vector<KDL::JntArray>  GvlOmplPlannerHelper::doTaskPlanning(double goal_val
       for(int j = 0;j<jointnum;j++){
           bounds.setLow(j,q_min(j));
           bounds.setHigh(j,q_max(j));
-          
       }
 
 
@@ -96,61 +96,42 @@ std::vector<KDL::JntArray>  GvlOmplPlannerHelper::doTaskPlanning(double goal_val
       this->si_->setStateValidityChecker(this->getptr());
       this->si_->setMotionValidator(this->getptr());
       this->si_->setup();
-    std::cout<<"DDDDOOOOO TASK PLANNING"<<std::endl;
 
     og::PathSimplifier simp(this->si_);
 
-    KDL::JntArray q_start(JOINTNUM);  
-    KDL::JntArray q_result(JOINTNUM);  
+    KDL::JntArray q_start(jointnum);  
+    KDL::JntArray q_result(jointnum);  
     
     KDL::ChainFkSolverPos_recursive fk_solver = KDL::ChainFkSolverPos_recursive(my_chain);
     KDL::Frame cartesian_pos;
     KDL::Frame cartesian_pos_result;
     
     KDL::Frame goal_pose( KDL::Rotation::Quaternion(goal_values[0],goal_values[1],goal_values[2],goal_values[3]),KDL::Vector(goal_values[4],goal_values[5],goal_values[6]));
-    printCatesianKDLFrame(cartesian_pos,"");
 
     fk_solver.JntToCart(q_start, cartesian_pos);
 
     KDL::ChainIkSolverVel_pinv iksolver1v(my_chain);
     KDL::ChainIkSolverPos_NR_JL iksolver1(my_chain,q_min,q_max,fk_solver,iksolver1v,2000,0.01);
-    std::cout<<"DDDDOOOOO TASK PLANNING111"<<std::endl;
 
-    for(int i=0;i<JOINTNUM;i++){
+    for(int i=0;i<jointnum;i++){
         q_start(i) = start_values(i);
     }
-    std::cout<<"DDDDOOOOO TASK PLANNING222"<<std::endl;
-    std::cout<<"q_start : "<<q_start(0)<<","<<q_start(1)<<","<<q_start(2)<<","<<q_start(3)<<","<<q_start(4)<<","<<q_start(5)<<std::endl;
-    std::cout<<"q_result : "<<q_result(0)<<","<<q_result(1)<<","<<q_result(2)<<","<<q_result(3)<<","<<q_result(4)<<","<<q_result(5)<<std::endl;
-    try{
-        bool ret = false;
-        while(!ret){
-            std::cout<<"DDDDOOOOO TASK PLANNING222-1"<<std::endl;
 
-            ret = iksolver1.CartToJnt(q_start,goal_pose,q_result);
-            std::cout<<"ik ret : "<<ret<<std::endl;
-        }
-    }catch(int e){
+    bool ret = iksolver1.CartToJnt(q_start,goal_pose,q_result);
 
-    }
-    
-    //std::cout<<"ik ret : "<<ret<<std::endl;
-    //std::cout<<"ik q : "<<q_result(0)<<","<<q_result(1)<<","<<q_result(2)
-    //                    <<","<<q_result(3)<<","<<q_result(4)<<","
-    //                    <<q_result(5)<<","<<q_result(6)<<","
-    //                    <<q_result(7)<<","<<q_result(8)<<std::endl;
-    std::cout<<"DDDDOOOOO TASK PLANNING222"<<std::endl;
+    std::cout<<"ik ret : "<<ret<<std::endl;
+
 
     fk_solver.JntToCart(q_result, cartesian_pos_result);
 
     ob::ScopedState<> start(space);
     ob::ScopedState<> goal(space);
     
-    for(int i = 0;i<JOINTNUM;i++){
+    for(int i = 0;i<jointnum;i++){
         start[i] = q_start(i);
         goal[i] = q_result(i);
     }
-    std::system("clear");
+    //std::system("clear");
     LOGGING_INFO(Gpu_voxels, "PDEF \n" << endl);
     auto pdef(std::make_shared<ob::ProblemDefinition>(this->si_));
     pdef->setStartAndGoalStates(start, goal);
@@ -158,7 +139,7 @@ std::vector<KDL::JntArray>  GvlOmplPlannerHelper::doTaskPlanning(double goal_val
 
     //auto planner(std::make_shared<og::KPIECE1>(this->si_));
 
-    auto planner(std::make_shared<og::ABITstar>(this->si_));
+    auto planner(std::make_shared<og::AITstar>(this->si_));
 
     
     planner->setProblemDefinition(pdef);
@@ -166,12 +147,12 @@ std::vector<KDL::JntArray>  GvlOmplPlannerHelper::doTaskPlanning(double goal_val
     int succs = 0;
     
     LOGGING_INFO(Gpu_voxels, "WHILE \n" << endl);
-    float solveTime = 0.1;
+    float solveTime = 0.5;
     int no_succs_count = 0;
      while(succs<1)
     {
         double sum = 0.0;
-        for(int k = 0;k<JOINTNUM;k++){
+        for(int k = 0;k<jointnum;k++){
             sum += sqrt((start[k]-goal[k])*(start[k]-goal[k]));
         }
         if(sum< 0.01){
@@ -216,28 +197,31 @@ std::vector<KDL::JntArray>  GvlOmplPlannerHelper::doTaskPlanning(double goal_val
 
     }
 
+            std::cout << "ENDdddddd OMPL" << std::endl;
 
 
     og::PathGeometric* solution= path->as<og::PathGeometric>();
-    solution->interpolate(100);
+
+    solution->interpolate(30);
     int step_count = solution->getStateCount();
+    std::cout<<step_count<<std::endl;
+    std::cout << "ENDdddddd OMPL" << std::endl;
 
     for(int i=0;i<step_count;i++){
         const double *values = solution->getState(i)->as<ob::RealVectorStateSpace::StateType>()->values;
         double *temp_values = (double*)values;
         KDL::JntArray temp_joints_value(jointnum);
-        for(int j = 0;j<jointnum;j++)
-            temp_joints_value(j)=temp_values[j];
+        for(int j =0;j<jointnum;j++)
+            temp_joints_value(j)=temp_values[j];    
         q_list.push_back(temp_joints_value);
     
      }
+    std::cout << "END OMPL22" << std::endl;
+
     return q_list;
 
 
 }
-
-
-
 
 
 
@@ -252,7 +236,7 @@ void rosjointStateCallback(const sensor_msgs::JointState::ConstPtr& msg){
     
     for(size_t i = 0; i < msg->name.size(); i++)
     {
-        myRobotJointValues[msg->name[i]] = msg->position[i];
+        myRobotJointValues[joint_names[i]] = msg->position[i];
         joint_states(i) = msg->position[i];
         
     }
@@ -268,7 +252,8 @@ void rosjointStateCallback(const sensor_msgs::JointState::ConstPtr& msg){
 }
 
 void rosDesiredPoseCallback(const geometry_msgs::Pose::ConstPtr& msg){
-  
+    
+    LOGGING_INFO(Gpu_voxels,msg->position.x<< endl);
      task_goal_values[0] = msg->orientation.x;
      task_goal_values[1] = msg->orientation.y;
      task_goal_values[2] = msg->orientation.z;
@@ -279,14 +264,89 @@ void rosDesiredPoseCallback(const geometry_msgs::Pose::ConstPtr& msg){
     new_pose_received=true;
 
 }
+
+
+void WaitFinish(IndyDCPConnector& connector) {
+    // Wait for motion finishing
+    bool fin = false;
+    do {
+            sleep(0.01);
+            connector.isMoveFinished(fin); // check if motion finished
+    } while (!fin);
+}
+int toggle = 1;
+
+
 void rosMovingFlagCallback(const std_msgs::Bool::ConstPtr& msg){
     isMoving = msg->data;
-    LOGGING_INFO(Gpu_voxels, "ISMOVING :  "<<isMoving << endl);
+    std::cout<<"roscallbackISMOVING :  "<<isMoving << endl;
     try{
-        if(joint_trajectory.size()>0){
+        if(joint_trajectory.size()>0 ){
+            std::cout<<"rrrrrrrrrrrrroscallbackISMOVING :  "<<isMoving << endl;
+
+            KDL::JntArray temp_q = joint_trajectory.at(0);
+            double send_q[6]={0,};
+            for(int i = 0;i<jointnum;i++)
+                send_q[i]=temp_q(i)*R2D;
+            connector.moveJointTo(send_q);
+            WaitFinish(connector);  
+
             reverse(joint_trajectory.begin(), joint_trajectory.end());
             joint_trajectory.pop_back();
             reverse(joint_trajectory.begin(), joint_trajectory.end());
+
+        }else if(joint_trajectory.size()<=1){
+
+            if(toggle==1){
+                 std::cout<<"\n\n toggle ==1 \n\n"<<std::endl;
+                 task_goal_values[0] = 0;
+                 task_goal_values[1] = 1;
+                 task_goal_values[2] = 0;
+                 task_goal_values[3] = 0;
+                 task_goal_values[4] = 0.5;
+                 task_goal_values[5] = -0.4;
+                 task_goal_values[6] = 0.3;
+                 toggle = toggle+1;
+                
+            }else if(toggle==2){
+                std::cout<<"\n\n toggle ==2 \n\n"<<std::endl;
+
+                         task_goal_values[0] = 0;
+                 task_goal_values[1] = 1;
+                 task_goal_values[2] = 0;
+                 task_goal_values[3] = 0;
+                 task_goal_values[4] = 0.5;
+                 task_goal_values[5] = 0.0;
+                 task_goal_values[6] = 0.5;
+
+                  toggle = toggle+1;             
+            }else if(toggle ==3){
+                    std::cout<<"\n\n toggle ==3 \n\n"<<std::endl;
+
+                 task_goal_values[0] = 0;
+                 task_goal_values[1] = 1;
+                 task_goal_values[2] = 0;
+                 task_goal_values[3] = 0;
+                 task_goal_values[4] = 0.5;
+                 task_goal_values[5] = 0.3;
+                 task_goal_values[6] = 0.3;
+                toggle = toggle+1;
+            }else if(toggle==4){
+                std::cout<<"\n\n toggle ==2 \n\n"<<std::endl;
+
+                 task_goal_values[0] = 0;
+                 task_goal_values[1] = 1;
+                 task_goal_values[2] = 0;
+                 task_goal_values[3] = 0;
+                 task_goal_values[4] = 0.5;
+                 task_goal_values[5] = 0.0;
+                 task_goal_values[6] = 0.5;
+
+                  toggle = 1;  
+              }
+            new_pose_received=true;
+
+
         }
     }
     catch(int e){
@@ -363,7 +423,94 @@ Eigen::Matrix4f GvlOmplPlannerHelper::loadBaseToCam(Eigen::Matrix4f TBaseToCamer
     return TBaseToCamera;
 }
 
+
+void pubJointState(double *jointValue,ros::Publisher *pub_joint ){
+    sensor_msgs::JointState jointState;
+    for(int j =0;j<jointnum;j++)
+        jointState.name.push_back(joint_names[j]);
+
+    
+    for(int i = 0;i<jointnum;i++)
+        jointState.position.push_back(jointValue[i]);
+    
+    jointState.header.stamp=ros::Time::now();
+    pub_joint->publish(jointState);
+
+}
+
+double calcErr(KDL::JntArray q1,KDL::JntArray q2){
+    double sum=0;
+    double err = 9999;
+    for(int i = 0;i<jointnum;i++){
+        sum+=(q1(i)-q2(i))*(q1(i)-q2(i));
+    }
+    err = sqrt(sum);
+    return err;
+}
+
 void GvlOmplPlannerHelper::dcpIter(){
+  clock_t start, end;
+  double result=0;
+  int count = 0;
+  connector.connect();
+  bool ready;
+  connector.isRobotReady(ready);
+  std::cout<<"robot ready : "<<ready<<std::endl;
+  if (ready) {
+        std::cout << "---------------------Indy7 Robot is ready-------------------" << std::endl;
+        bool ishome;
+        connector.isHome(ishome);
+        if (!ishome){
+            connector.moveJointHome();
+            WaitFinish(connector);  
+
+        } else{
+            usleep(1000000);
+           }
+
+        connector.setJointBoundaryLevel(5);
+    while(1){
+
+
+      start = clock();
+      double jointValue[6];
+      connector.getJointPosition(jointValue);
+
+
+      for(int i = 0;i<jointnum;i++)
+    {
+        myRobotJointValues[joint_names[i]] = jointValue[i]*D2R;
+        joint_states(i) = jointValue[i]*D2R;
+        
+    }
+
+    if(calcErr(prev_joint_states,joint_states)<0.01 && count ==1){
+        continue;
+    }
+    gvl->clearMap("myRobotMap");
+    gvl->clearMap("myRobotMapBitVoxel");
+    
+    gvl->clearMap("myRobotCollisionMap");
+    gvl->clearMap("myRobotCollisionMapBitVoxel");
+    
+
+    prev_joint_states = joint_states;
+    gvl->setRobotConfiguration("myUrdfRobot",myRobotJointValues);
+    gvl->setRobotConfiguration("myUrdfCollisionRobot",myRobotJointValues);
+    gvl->insertRobotIntoMap("myUrdfRobot","myRobotMap",eBVM_OCCUPIED);
+    gvl->insertRobotIntoMap("myUrdfRobot","myRobotMapBitVoxel",YELLOW);
+    //LOGGING_INFO(Gpu_voxels, "ROS JointState " << endl);
+
+    gvl->insertRobotIntoMap("myUrdfCollisionRobot","myRobotCollisionMap",eBVM_OCCUPIED);
+    gvl->insertRobotIntoMap("myUrdfCollisionRobot", "myRobotCollisionMapBitVoxel", BLUE);
+
+      end = clock();
+      result = (double)(end - start);
+      std::cout<<result<<"ms"<<std::endl;
+      count = 1;
+    }
+
+  }
 
 }
 
@@ -400,7 +547,8 @@ void GvlOmplPlannerHelper::rosIter(){
     const char* point_topic_name_ =point_topic_name.c_str();
     ros::Subscriber point_sub = nh.subscribe<pcl::PointCloud<pcl::PointXYZ> >(point_topic_name_, 1,roscallback);
 
-
+    //ros::Subscriber point_sub = nh.subscribe<pcl::PointCloud<pcl::PointXYZ> >("/cam_0_zf", 1,roscallback);
+    //ros::Publisher pub_joint =  nh.advertise<sensor_msgs::JointState>("/joint_states_desired", 1000);
     ros::Publisher pub = nh.advertise<trajectory_msgs::JointTrajectory>("joint_trajectory", 100);
 
     ros::Publisher cmdMove_pub = nh2.advertise<std_msgs::Bool>("/cmdMove", 100); 
@@ -430,7 +578,7 @@ void GvlOmplPlannerHelper::rosIter(){
             Vector3f());
             myEnvironmentMap->merge(countingVoxelList);
             num_colls = gvl->getMap("countingVoxelList")->as<gpu_voxels::voxellist::CountingVoxelList>()->collideWith(gvl->getMap("mySolutionMap")->as<gpu_voxels::voxellist::BitVectorVoxelList>(), 1.0f);
-            if(num_colls>400){
+            if(num_colls>coll_threshold){
                 std::cout << "!!!!!!!!!!!!!!!Detected Collision!!!!!!!!! " << num_colls << " collisions " << std::endl;
                 cmdMove=false;
                 new_pose_received = true;
@@ -443,28 +591,27 @@ void GvlOmplPlannerHelper::rosIter(){
         if(new_pose_received){
            // LOGGING_INFO(Gpu_voxels, "Recived Target Position " << endl);
             ob::PathPtr path;
-            std::cout<<"target reached"<<std::endl;
-            std::cout<<joint_states(0)<<std::endl;
             joint_trajectory=GvlOmplPlannerHelper::doTaskPlanning(task_goal_values,joint_states,path);
                 GvlOmplPlannerHelper::visualizeSolution(joint_trajectory);    
                     
         }
         if(new_pose_received==false){
-          std::cout << "!!!!!!!!!!!!!!!isMoving!!!!!!!!! " << isMoving << std::endl;
+          //std::cout << "!!!!!!!!!!!!!!!isMoving!!!!!!!!! " << isMoving << std::endl;
+          /*
             if(joint_trajectory.size()&& isMoving){
                 trajectory_msgs::JointTrajectory jointTrajectory;
 
                 jointTrajectory = trajectory_msgs::JointTrajectory();
-                for(int i =0;i<jointnum;i++)
-                    jointTrajectory.joint_names.push_back(joint_names.at(i));
-
+                for(int j =0;j<jointnum;j++)
+                    jointTrajectory.joint_names.push_back(joint_names[j]);
+            
                 jointTrajectory.header.stamp = ros::Time::now();
                 trajectory_msgs::JointTrajectoryPoint points;
                 for(int j=0;j<joint_trajectory.size();j++){
                     points=trajectory_msgs::JointTrajectoryPoint();
                     KDL::JntArray temp_q = joint_trajectory.at(j);
                     
-                    for(int k=0;k<JOINTNUM;k++){
+                    for(int k=0;k<jointnum;k++){
                         points.positions.push_back(temp_q(k));
                         points.velocities.push_back(0.0);
                     }
@@ -479,6 +626,7 @@ void GvlOmplPlannerHelper::rosIter(){
                 joint_trajectory.clear();
                 isMoving=false;
             }
+            */
         }
 
 
@@ -540,7 +688,7 @@ GvlOmplPlannerHelper::GvlOmplPlannerHelper(const ob::SpaceInformationPtr &si)
 
     LOGGING_INFO(Gpu_voxels, "\n\nKDL Number of Joints : "<<my_tree.getNrOfJoints() <<"\n"<< endl);
 
-   
+    LOGGING_INFO(Gpu_voxels, "\n\nKDL Chain load : "<<my_tree.getChain(base_link_name,tcp_link_name,my_chain) <<"\n"<< endl);
 
 
 
@@ -578,7 +726,10 @@ void GvlOmplPlannerHelper::doVis()
 
 
     gvl->visualizeMap("countingVoxelList");
-
+    gvl->insertBoxIntoMap(Vector3f(1.0, 0.8 ,0.0), Vector3f(2.7, 0.81 ,1.5), "myEnvironmentMap", eBVM_OCCUPIED, 2);
+    gvl->insertBoxIntoMap(Vector3f(1.0, 2.2 ,0.0), Vector3f(2.7, 2.21 ,1.5), "myEnvironmentMap", eBVM_OCCUPIED, 2);
+    gvl->insertBoxIntoMap(Vector3f(1.0, 0.8 ,1.5), Vector3f(2.7, 2.21 ,1.5), "myEnvironmentMap", eBVM_OCCUPIED, 2);
+     //gvl->insertBoxIntoMap(Vector3f(1.0, 0.8 ,0.0), Vector3f(2.7, 2.21 ,-0.01), "myEnvironmentMap", eBVM_OCCUPIED, 2);
 }
 
 
@@ -602,8 +753,8 @@ void GvlOmplPlannerHelper::visualizeSolution(ob::PathPtr path)
         const double *values = solution->getState(step)->as<ob::RealVectorStateSpace::StateType>()->values;
 
         robot::JointValueMap state_joint_values;
-        for(int k= 0 ;k<jointnum;k++)
-            state_joint_values[joint_names.at(k)] = values[k];
+        for(int j =0;j<jointnum;j++)
+            state_joint_values[joint_names[j]] = values[j];
         // update the robot joints:
         gvl->setRobotConfiguration("myUrdfRobot", state_joint_values);
         // insert the robot into the map:
@@ -613,7 +764,7 @@ void GvlOmplPlannerHelper::visualizeSolution(ob::PathPtr path)
     gvl->visualizeMap("mySolutionMap");
 
 }
-void GvlOmplPlannerHelper::visualizeSolution(std::vector< KDL::JntArray > solution)
+void GvlOmplPlannerHelper::visualizeSolution(std::vector<KDL::JntArray> solution)
 {
     gvl->clearMap("mySolutionMap");
 
@@ -623,9 +774,8 @@ void GvlOmplPlannerHelper::visualizeSolution(std::vector< KDL::JntArray > soluti
         KDL::JntArray temp_q = solution.at(j);
 
         robot::JointValueMap state_joint_values;
-        for(int k= 0 ;k<jointnum;k++)
-            state_joint_values[joint_names.at(k)] = temp_q(k);
-
+        for(int j =0;j<jointnum;j++)
+            state_joint_values[joint_names[j]] = temp_q(j);
         // update the robot joints:
         gvl->setRobotConfiguration("myUrdfRobot", state_joint_values);
         // insert the robot into the map:
@@ -640,17 +790,15 @@ void GvlOmplPlannerHelper::insertStartAndGoal(const ompl::base::ScopedState<> &s
     gvl->clearMap("myQueryMap");
 
     robot::JointValueMap state_joint_values;
-    for(int k= 0 ;k<jointnum;k++)
-        state_joint_values[joint_names.at(k)] = start[k];
-
+    for(int j =0;j<jointnum;j++)
+            state_joint_values[joint_names[j]] = start[j];
 
     // update the robot joints:
     gvl->setRobotConfiguration("myUrdfRobot", state_joint_values);
     gvl->insertRobotIntoMap("myUrdfRobot", "myQueryMap", BitVoxelMeaning(eBVM_SWEPT_VOLUME_START));
 
-    for(int k= 0 ;k<jointnum;k++)
-        state_joint_values[joint_names.at(k)] = goal[k];
-
+        for(int j =0;j<jointnum;j++)
+            state_joint_values[joint_names[j]] = goal[j];
     // update the robot joints:
     gvl->setRobotConfiguration("myUrdfRobot", state_joint_values);
     gvl->insertRobotIntoMap("myUrdfRobot", "myQueryMap", BitVoxelMeaning(eBVM_SWEPT_VOLUME_START+1));
@@ -667,9 +815,8 @@ bool GvlOmplPlannerHelper::isValid(const ompl::base::State *state) const
     const double *values = state->as<ob::RealVectorStateSpace::StateType>()->values;
 
     robot::JointValueMap state_joint_values;
-    for(int k= 0 ;k<jointnum;k++)
-        state_joint_values[joint_names.at(k)] = values[k];
-
+    for(int j =0;j<jointnum;j++)
+        state_joint_values[joint_names[j]] = values[j];
     // update the robot joints:
     gvl->setRobotConfiguration("myUrdfRobot", state_joint_values);
     // insert the robot into the map:
@@ -801,8 +948,8 @@ bool GvlOmplPlannerHelper::checkMotion(const ompl::base::State *s1, const ompl::
             const double *values = test->as<ob::RealVectorStateSpace::StateType>()->values;
 
             robot::JointValueMap state_joint_values;
-            for(int k= 0 ;k<jointnum;k++)
-                state_joint_values[joint_names.at(k)] = values[k];
+            for(int j =0;j<jointnum;j++)
+                state_joint_values[joint_names[j]] = values[j];
 
             // update the robot joints:
             gvl->setRobotConfiguration("myUrdfRobot", state_joint_values);

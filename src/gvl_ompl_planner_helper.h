@@ -22,7 +22,7 @@
 //----------------------------------------------------------------------/*
 #ifndef GVL_LINKAGE_TEST_LIB_H_INCLUDED
 #define GVL_LINKAGE_TEST_LIB_H_INCLUDED
-#define JOINTNUM 6
+#define JOINTNUM 9
 
 
 #include <gpu_voxels/GpuVoxels.h>
@@ -36,6 +36,8 @@
 #include <ompl/geometric/planners/rrt/RRT.h>
 #include <ompl/geometric/planners/cforest/CForest.h>
 #include <ompl/geometric/planners/informedtrees/ABITstar.h>
+#include <ompl/geometric/planners/informedtrees/AITstar.h>
+
 #include <ompl/base/PlannerTerminationCondition.h>
 #include <ompl/geometric/planners/fmt/FMT.h>
 #include <ompl/geometric/PathSimplifier.h>
@@ -47,6 +49,7 @@
 #include <tuple>
 #include <mutex>
 #include <vector>
+#include "../indydcp/IndyDCPConnector.h"
 
 
 
@@ -72,6 +75,8 @@ union Data
 };
 
  int jointnum=6;
+std::string urdf_name="";
+std::string colilsion_urdf_name="";
 
 
 std::vector<KDL::JntArray> joint_trajectory;
@@ -79,8 +84,6 @@ std::vector<KDL::JntArray> joint_trajectory;
 
 robot::JointValueMap myRobotJointValues;
 robot::JointValueMap myRobotJointValues_mm;
-KDL::JntArray joint_states;
-
 
 gpu_voxels::GpuVoxelsSharedPtr gvl;
 PointCloud my_point_cloud;
@@ -102,6 +105,9 @@ KDL::Tree my_tree;
 KDL::Chain my_chain;
 KDL::JntArray q_min;
 KDL::JntArray q_max;
+KDL::JntArray joint_states;
+KDL::JntArray prev_joint_states;
+
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 using boost::dynamic_pointer_cast;
@@ -112,6 +118,7 @@ using gpu_voxels::voxellist::CountingVoxelList;
 using gpu_voxels::voxellist::BitVectorVoxelList;
 
 float voxel_side_length = 0.01f; // 1 cm voxel size
+int coll_threshold = 0;
 bool new_data_received;
 bool new_pose_received;
 bool isMoving = false;
@@ -121,9 +128,9 @@ boost::shared_ptr<CountingVoxelList> countingVoxelList;
 boost::shared_ptr<BitVectorVoxelList> myRobotCollisionMapBitVoxel;
 Eigen::Matrix4f TBaseToCamera=Eigen::Matrix4f::Identity();
 
+std::string base_link_name ="";
+std::string tcp_link_name ="";
 
-std::string urdf_name="";
-std::string  colilsion_urdf_name="";
 std::string  point_topic_name="";
 std::vector<std::string> joint_names;
 

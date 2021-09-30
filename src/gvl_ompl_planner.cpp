@@ -66,11 +66,18 @@ bool ReadFromFile(const char* filename, char* buffer, int len){
   return true;
 
 }
+
 int main(int argc, char **argv)
 { 
 
+
+
+//LOAD JSON data
   cout<<argv[1]<<endl;
+
   const char* JSON_FILE= argv[1];
+  std::string robot_name = argv[2];
+  
   const int BufferLength = 102400;
   char readBuffer[BufferLength] = {0,};
   if (false == ReadFromFile(JSON_FILE, readBuffer, BufferLength)) 
@@ -83,9 +90,9 @@ int main(int argc, char **argv)
     std::cout << "Failed to parse configuration\n" << reader.getFormatedErrorMessages(); 
     return 0; 
   }
-  std::cout << rootr["robot"]["joint_names"]<<endl;
+  std::cout << rootr[robot_name]["joint_names"]<<endl;
   for(int i = 0;i<jointnum;i++){
-    joint_names.push_back(rootr["robot"]["joint_names"][i].asString());
+    joint_names.push_back(rootr[robot_name]["joint_names"][i].asString());
     cout<<joint_names.at(i)<<endl;
   }
 
@@ -95,69 +102,21 @@ int main(int argc, char **argv)
       TBaseToCamera(i,j) = rootr["camera"]["BaseToCamera"][i][j].asFloat();
   std::cout<<TBaseToCamera<<std::endl;
   std::cout<<tf<<std::endl;
-
-  urdf_name = rootr["robot"]["urdf_location"].asString();
-
-
-std::cout<<"==============KDL TEST=============="<<std::endl;
-
- if (!kdl_parser::treeFromFile(urdf_name, my_tree)){
-             LOGGING_INFO(Gpu_voxels,"Failed to construct kdl tree");
-    }
-
-
-    KDL::JntArray q_start(JOINTNUM);  
-    KDL::JntArray q_result(JOINTNUM);  
-    
-    KDL::ChainFkSolverPos_recursive fk_solver = KDL::ChainFkSolverPos_recursive(my_chain);
-    KDL::Frame cartesian_pos;
-    KDL::Frame cartesian_pos_result;
-    
-    KDL::Frame goal_pose( KDL::Rotation::Quaternion(0,0,0,1),KDL::Vector(0.4,0.5,0.1));
-
-    fk_solver.JntToCart(q_start, cartesian_pos);
-
-    KDL::ChainIkSolverVel_pinv iksolver1v(my_chain);
-    KDL::ChainIkSolverPos_NR_JL iksolver1(my_chain,q_min,q_max,fk_solver,iksolver1v,2000,0.01);
-
-    std::cout<<"q_start : "<<q_start(0)<<","<<q_start(1)<<","<<q_start(2)<<","<<q_start(3)<<","<<q_start(4)<<","<<q_start(5)<<std::endl;
-    std::cout<<"q_result : "<<q_result(0)<<","<<q_result(1)<<","<<q_result(2)<<","<<q_result(3)<<","<<q_result(4)<<","<<q_result(5)<<std::endl;
-    try{
-        bool ret = false;
-        while(!ret){
-            std::cout<<"DDDDOOOOO TASK PLANNING222-1"<<std::endl;
-
-            ret = iksolver1.CartToJnt(q_start,goal_pose,q_result);
-            std::cout<<"ik ret : "<<ret<<std::endl;
-        }
-    }catch(int e){
-
-    }
-
-
-    std::cout<<"q_result : "<<q_result(0)<<","<<q_result(1)<<","<<q_result(2)<<","<<q_result(3)<<","<<q_result(4)<<","<<q_result(5)<<std::endl;
-
-
-  usleep(1000000000000000000);
-
-
-
-
-
-
-
-
-
-
-
-
+   voxel_side_length= rootr["camera"]["voxel_size"].asFloat();
+   coll_threshold = rootr["camera"]["collision_threshold"].asInt();
+  urdf_name = rootr[robot_name]["urdf_location"].asString();
   colilsion_urdf_name = rootr["robot_collision"]["urdf_location"].asString();
   point_topic_name = rootr["camera"]["topic_name"].asString();
+  base_link_name =rootr[robot_name]["base_link_name"].asString();
+  tcp_link_name =rootr[robot_name]["tcp_link_name"].asString();
 
-  jointnum = rootr["robot"]["JOINTNUM"].asInt();
-  base_x=rootr["robot"]["base_position"][0].asFloat();
-  base_y=rootr["robot"]["base_position"][1].asFloat();
-  base_z=rootr["robot"]["base_position"][2].asFloat();
+
+  jointnum = rootr[robot_name]["JOINTNUM"].asInt();
+  base_x=rootr[robot_name]["base_position"][0].asFloat();
+  base_y=rootr[robot_name]["base_position"][1].asFloat();
+  base_z=rootr[robot_name]["base_position"][2].asFloat();
+
+
 
 
   KDL::JntArray q_min_(jointnum);
@@ -165,16 +124,22 @@ std::cout<<"==============KDL TEST=============="<<std::endl;
   KDL::JntArray joint_states_(jointnum);
 
   for(int j = 0;j<jointnum;j++){
-      q_min_(j) = rootr["robot"]["lower_limit"][j].asFloat();
-      q_max_(j) = rootr["robot"]["upper_limit"][j].asFloat();
-      joint_states_(j)=0.0;
+      q_min_(j) = rootr[robot_name]["lower_limit"][j].asFloat();
+      q_max_(j) = rootr[robot_name]["upper_limit"][j].asFloat();
+      joint_states_(j)=rootr[robot_name]["joint_init"][j].asFloat();
       cout<<"qmin : "<<q_min_.data(j)<<endl;
-      cout<<"qmax : "<<rootr["robot"]["upper_limit"][j]<<endl;
+      cout<<"qmax : "<<rootr[robot_name]["upper_limit"][j]<<endl;
          
   }
   q_min = q_min_;
   q_max = q_max_;
   joint_states = joint_states_;
+  prev_joint_states = joint_states;
+
+
+
+
+
 
   usleep(100);
 

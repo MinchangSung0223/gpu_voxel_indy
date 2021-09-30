@@ -1,12 +1,16 @@
 {
-    "robot": {
+    "indy_robot": {
         "urdf_location": "./models/indy7_coarse/indy7.urdf",
-        "lower_limit":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
-		"upper_limit":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],
+        "lower_limit":[-3.05432619099,-3.05432619099,-3.05432619099,-3.05432619099,-3.05432619099,-3.75245789179],
+		"upper_limit":[3.05432619099,3.05432619099,3.05432619099,3.05432619099,3.05432619099,3.75245789179],
 		"joint_names":["joint0","joint1","joint2","joint3","joint4","joint5"],
-        "base_position":[1,1,0],
+        "base_link_name":"base_link",
+        "tcp_link_name":"tcp",
+        "base_position":[1.5,1.5,0],
         "base_orientation":[0,0,0],
-		"JOINTNUM":6
+        "joint_init":[0,-0.2618,-1.5708,0,-1.309,0],
+		"JOINTNUM":6,
+        "target":[0,1,0,0,0.6,0,0.5]
 
     },
     "robot_collision": {
@@ -14,6 +18,8 @@
         "lower_limit":[1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
 		"upeer_limit":[1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
 		"joint_names":["joint0","joint1","joint2","joint3","joint4","joint5"],
+        "base_link_name":"link0",
+        "tcp_link_name":"tcp",
         "base_position":[1,1,0],
         "base_orientation":[0,0,0],
         "JOINTNUM":6
@@ -23,6 +29,26 @@
     	"BaseToCamera":[[-0.65328 ,-0.38268 ,-0.65328, 1.50000],
  [0.27060 ,-0.92388 ,0.27060, -0.50000],
  [-0.70711 ,0.00000, 0.70711 ,1.20000],
- [0.00000 ,0.00000, 0.00000 ,1.00000]]
+ [0.00000 ,0.00000, 0.00000 ,1.00000]],
+     //   "BaseToCamera":[[-0.77319416 , 0.15791667 ,-0.61419306,  0.93471222],
+ //[ 0.63376981 , 0.22678869 ,-0.73952871 , 0.38967743],
+ //[ 0.02250813 ,-0.9610563 , -0.27543452  ,0.81003793],
+ //[ 0        , 0 ,         0          ,1        ]],
+        "voxel_size":0.02,
+        "collision_threshold":10
+    },
+        "panda_robot": {
+        "urdf_location": "./models/panda_coarse/panda_7link.urdf",
+        "lower_limit":[-2.8973,-1.7628,-2.8973,-3.0718,-2.8973,-0.0175,-2.8973],
+        "upper_limit":[2.8973,1.7628,2.8973,-0.0698,2.8973,3.7525,2.8973],
+        "joint_names":["panda_joint1","panda_joint2","panda_joint3","panda_joint4","panda_joint5","panda_joint6","panda_joint7"],
+        "base_link_name":"panda_link0",
+        "tcp_link_name":"panda_link8",
+        "base_position":[1,1,0],
+        "base_orientation":[0,0,0],
+        "joint_init":[0,-0.78508577,0,-2.3555949,0,1.57091693296,1.5709169296],
+        "JOINTNUM":7,
+        "target":[0,3.141592,0,1,0.5,0,0.5]
+
     }
 }

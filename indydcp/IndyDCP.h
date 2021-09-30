@@ -227,6 +227,8 @@ enum Command : int
 	CMD_GET_TASK_POSITION		= 322,
 	CMD_GET_TASK_VELOCITY		= 323,
 	CMD_GET_TORQUE				= 324,
+	CMD_GET_INV_KIN				= 325,
+
 
 	CMD_GET_LAST_EMG_INFO		= 380,	//new
 

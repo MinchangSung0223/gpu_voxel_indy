@@ -37,11 +37,18 @@
 <link name="world">
   </link>
   <joint name="world_fixed" type="fixed">
-    <origin rpy="0 0 0" xyz="1 1 0"/>
+    <origin rpy="0 0 0" xyz="1.5 1.5 0"/>
     <parent link="world"/>
-    <child link="link0"/>
+    <child link="base_link"/>
   </joint>
-
+<link name="base_link"/>
+   <joint name="base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="link0"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" lower="-3.05432619099" upper="3.05432619099" velocity="1"/>
+  </joint>
 <link name="link0">
  <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>

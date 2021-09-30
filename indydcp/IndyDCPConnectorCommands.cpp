@@ -700,11 +700,6 @@ int IndyDCPConnector::getJointPosition(double * const ret)
 	INDY_DCP_EXEC_CMD_RES_ARR_DOF(CMD_GET_JOINT_POSITION, double, ret);
 }
 
-int IndyDCPConnector::getJointVelocity(double * const ret)
-{
-	INDY_DCP_EXEC_CMD_RES_ARR_DOF(CMD_GET_JOINT_VELOCITY, double, ret);
-}
-
 int IndyDCPConnector::getTaskPosition(double * const ret)
 {
 	INDY_DCP_EXEC_CMD_RES_ARR(CMD_GET_TASK_POSITION, double, ret, 6);

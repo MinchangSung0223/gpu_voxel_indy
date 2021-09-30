@@ -142,6 +142,7 @@ target_link_libraries (gvl_ompl_planner
     LINK_PUBLIC ${orocos_kdl_LIBRARIES} 
     LINK_PUBLIC ${Boost_LIBRARIES}
     LINK_PUBLIC ${Poco_LIBRARIES}
+     LINK_PUBLIC indydcp
    # LINK_PUBLIC PocoNet
    # LINK_PUBLIC PocoFoundation
    # LINK_PUBLIC PocoUtil
@@ -154,3 +155,16 @@ add_executable(indyTest src/indyTest.cpp)
 target_link_libraries(indyTest 
         LINK_PUBLIC indydcp)
 
+
+
+add_executable(kdlTest src/kdlTest.cpp)
+target_link_libraries(kdlTest 
+            LINK_PUBLIC ${orocos_kdl_LIBRARIES}
+    LINK_PUBLIC ${catkin_LIBRARIES} )
+
+target_include_directories (kdlTest
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+    PUBLIC ${orocos_kdl_INCLUDE_DIRS} # this should be removed in upcoming versions.
+    PUBLIC  ${catkin_INCLUDE_DIRS}
+
+)

@@ -9,5 +9,6 @@ cd build && cmake .. -D icl_core_DIR=~/workspace/gpu-voxels/build/packages/icl_c
 make -j16
 cp gvl_ompl_planner ../
 cp indyTest ../
-
+cp kdlTest ../
 export GPU_VOXELS_MODEL_PATH=models
+

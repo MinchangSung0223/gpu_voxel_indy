@@ -37,7 +37,7 @@
 <link name="world">
   </link>
   <joint name="world_fixed" type="fixed">
-    <origin rpy="0 0 0" xyz="1 1 0"/>
+    <origin rpy="0 0 0" xyz="1.5 1.5 0"/>
     <parent link="world"/>
     <child link="link0"/>
   </joint>

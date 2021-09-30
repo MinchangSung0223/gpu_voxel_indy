@@ -422,6 +422,7 @@ gvl_ompl_planner: //usr/lib/x86_64-linux-gnu/libboost_serialization.so
 gvl_ompl_planner: //usr/lib/x86_64-linux-gnu/libboost_chrono.so
 gvl_ompl_planner: //usr/lib/x86_64-linux-gnu/libboost_atomic.so
 gvl_ompl_planner: //usr/lib/x86_64-linux-gnu/libboost_regex.so
+gvl_ompl_planner: libindydcp.so
 gvl_ompl_planner: /usr/local/lib/libpcl_registration.so
 gvl_ompl_planner: /usr/local/lib/libpcl_segmentation.so
 gvl_ompl_planner: /usr/local/lib/libpcl_features.so
